@@ -124,8 +124,15 @@ void loop(){
 	}
 
     if(state & BUTTON_LONG_PRESS) {
-    	audioEngine.stackedVoices = !audioEngine.stackedVoices;
-    	notesUpdate = true;
+      int settingNum = settings.rotateSettings();
+      if (settingNum == 0) {
+          ledControl.kit();
+      } else {
+          ledControl.flashMulti(settingNum);
+      }
+      interface.init(&settings);
+      tuning.init();
+      audioEngine.init(&settings, tuning.createNoteMap(), waveform);
     }
 
     if (notesUpdate) {

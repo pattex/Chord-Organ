@@ -7,6 +7,7 @@ class Settings {
   public:
     Settings(const char* filename);
     void init(boolean hasSD);
+    int rotateSettings();
     void read();
     void write();
 	void printDebug();
@@ -61,9 +62,16 @@ class Settings {
 	    {-12,0,0,12,24,255,255,255}
 	};	
   private:
-    const char* _filename;
+    boolean _hasSD;
+    const char* defaultFilename;
+    char _filename[30];
+    char* extFilename;
+    //const char* baseFilename = "CHORDORG";
+    char baseFilename[20];
     File settingsFile;
     void copyDefaults();
+    void splitFilename();
+    void initialization(boolean hasSD);
 };
 
 #endif

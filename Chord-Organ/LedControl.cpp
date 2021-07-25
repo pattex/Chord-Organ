@@ -54,3 +54,35 @@ void LedControl::bankAndSingle(int bank, int index) {
     	single(index % 4);
     }
 }
+
+void LedControl::flashMulti(int times) {
+    flashingBank = false;
+    while (times > 0) {
+        if(bankFlashTimer >= 200) {
+            bankFlashTimer = 0;
+            flashingBank = !flashingBank;
+            if(flashingBank) {
+                multi(0xF);
+            } else {
+                multi(0x0);
+                times--;
+            }
+        }
+    }
+}
+
+void LedControl::kit() {
+    int i = 3;
+    do {
+        if(bankFlashTimer >= 100) {
+            bankFlashTimer = 0;
+            flashingBank = !flashingBank;
+            if(flashingBank) {
+                single(i);
+            } else {
+                single(15);
+                i--;
+            }
+        }
+    } while (i >= 0);
+}

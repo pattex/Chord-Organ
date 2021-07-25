@@ -4,27 +4,14 @@
 //#define DEBUG_CHORDS
 
 Settings::Settings(const char* filename) {
-	_filename = filename;
+  defaultFilename = filename;
+  splitFilename();
+	strcpy(_filename, filename);
 }
 
 void Settings::init(boolean hasSD) {
-
-	if(!hasSD) {
-		// Configure defaults
-		copyDefaults();
-	} else {
-	    if (SD.exists(_filename)) {
-	        read();
-	    }
-	    else { 
-	      
-	#ifdef DEBUG_MODE
-	        Serial.println("Settings file not found, writing new settings");
-	#endif
-	        write();
-	        read();
-	    };
-	}
+  _hasSD = hasSD;
+  initialization(hasSD);
 }
 
 void Settings::copyDefaults() {
@@ -34,6 +21,60 @@ void Settings::copyDefaults() {
 		}
 	}
 	numChords = 16;
+}
+
+int Settings::rotateSettings() {
+    char tmpSettingsFileName[30];
+    int settingsFileNumIndex = strlen(baseFilename);
+    int settingsFileNum = 0;
+
+    if (_filename[settingsFileNumIndex] != '.') {
+        settingsFileNum = _filename[settingsFileNumIndex] - '0';
+    }
+
+    while (settingsFileNum <= 9) {
+        if (settingsFileNum == 9) {
+            settingsFileNum = 0;
+        } else {
+            settingsFileNum++;
+        }
+
+        if (settingsFileNum == 0) {
+            sprintf(tmpSettingsFileName, "%s%s", baseFilename, extFilename);
+        } else {
+            sprintf(tmpSettingsFileName, "%s%d%s", baseFilename, settingsFileNum, extFilename);
+        }
+        if (SD.exists(tmpSettingsFileName)) {
+            strcpy(_filename, tmpSettingsFileName);
+            break;
+        }
+    };
+
+    initialization(_hasSD);
+    return settingsFileNum;
+}
+
+void Settings::splitFilename() {
+    extFilename = strrchr(defaultFilename, '.');
+    strncpy(baseFilename, defaultFilename, strlen(defaultFilename) -  strlen(extFilename));
+}
+
+void Settings::initialization(boolean hasSD) {
+if(!hasSD) {
+    // Configure defaults
+    copyDefaults();
+  } else {
+      if (SD.exists(_filename)) {
+          read();
+      }
+      else {
+  #ifdef DEBUG_MODE
+          Serial.println("Settings file not found, writing new settings");
+  #endif
+          write();
+          read();
+      };
+  }
 }
 
 void Settings::read() {

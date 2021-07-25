@@ -21,6 +21,8 @@ class LedControl {
 		void multi(uint8_t bits);
 		void bankAndSingle(int bank, int index);
 		void flash();
+    void flashMulti(int times);
+    void kit();
 	private:
 		boolean flashingBank = false;
 		elapsedMillis bankFlashTimer = 0;
