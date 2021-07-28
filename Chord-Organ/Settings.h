@@ -8,6 +8,7 @@ class Settings {
     Settings(const char* filename);
     void init(boolean hasSD);
     int rotateSettings();
+    boolean loadSettingsFile(int settingsFileNum);
     void read();
     void write();
 	void printDebug();

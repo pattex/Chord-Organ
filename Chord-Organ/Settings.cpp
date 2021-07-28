@@ -24,9 +24,8 @@ void Settings::copyDefaults() {
 }
 
 int Settings::rotateSettings() {
-    char tmpSettingsFileName[30];
-    int settingsFileNumIndex = strlen(baseFilename);
     int settingsFileNum = 0;
+    int settingsFileNumIndex = strlen(baseFilename);
 
     if (_filename[settingsFileNumIndex] != '.') {
         settingsFileNum = _filename[settingsFileNumIndex] - '0';
@@ -39,19 +38,29 @@ int Settings::rotateSettings() {
             settingsFileNum++;
         }
 
-        if (settingsFileNum == 0) {
-            sprintf(tmpSettingsFileName, "%s%s", baseFilename, extFilename);
-        } else {
-            sprintf(tmpSettingsFileName, "%s%d%s", baseFilename, settingsFileNum, extFilename);
-        }
-        if (SD.exists(tmpSettingsFileName)) {
-            strcpy(_filename, tmpSettingsFileName);
-            break;
-        }
+        if (loadSettingsFile(settingsFileNum) == true) break;
     };
 
-    initialization(_hasSD);
     return settingsFileNum;
+}
+
+boolean Settings::loadSettingsFile(int settingsFileNum) {
+    char tmpSettingsFileName[30];
+    boolean returnVal = false;
+
+    if (settingsFileNum == 0) {
+        sprintf(tmpSettingsFileName, "%s%s", baseFilename, extFilename);
+    } else {
+        sprintf(tmpSettingsFileName, "%s%d%s", baseFilename, settingsFileNum, extFilename);
+    }
+
+    if (SD.exists(tmpSettingsFileName)) {
+        strcpy(_filename, tmpSettingsFileName);
+        initialization(_hasSD);
+        returnVal = true;
+    }
+
+    return returnVal;
 }
 
 void Settings::splitFilename() {

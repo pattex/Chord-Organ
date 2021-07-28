@@ -28,12 +28,19 @@
 #define READ_RESTART()     (*(volatile uint32_t *)RESTART_ADDR)
 #define WRITE_RESTART(val) ((*(volatile uint32_t *)RESTART_ADDR) = (val))
 
+// EEPROM Addresses
+#define WAVEFORM_ADDR 1234
+#define CONFIG_FILE_ADDR   42
+
 elapsedMillis cpuCheckTimer;
 
 // Current waveform index
 int waveform = 0;
 int waveformPage = 0;
 int waveformPages = 1;
+
+// Current settings file number
+int settingsFileNum = 0;
 
 AudioEngine audioEngine;
 Settings settings("CHORDORG.TXT");
@@ -64,8 +71,14 @@ Serial.println("Starting");
 
 
     // Read waveform settings from EEPROM
-    waveform = EEPROM.read(1234);
+    waveform = EEPROM.read(WAVEFORM_ADDR);
     if (waveform < 0) waveform = 0;
+
+    // Read config file setting from EEPROM
+    settingsFileNum = EEPROM.read(CONFIG_FILE_ADDR);
+    if (settingsFileNum < 0 || settingsFileNum > 9) settingsFileNum = 0;
+    // Load and initialize settings
+    settings.loadSettingsFile(settingsFileNum);
 
     waveformPages = settings.extraWaves ? 3 : 1;
     if(settings.extraWaves) {
@@ -117,22 +130,25 @@ void loop(){
 	int notesUpdate = state & (ROOT_NOTE_UPDATE | CHORD_INDEX_CHANGED);
 	int buttonShortPress = state & BUTTON_SHORT_PRESS;
 
+    // Reboot module on very long button press
 	if(state & BUTTON_VERY_LONG_PRESS) {
 		// show all LEDs
 		ledControl.multi(0xF);
 		reBoot(50);
 	}
 
+    // Cycle through settings files on long button press
     if(state & BUTTON_LONG_PRESS) {
-      int settingNum = settings.rotateSettings();
-      if (settingNum == 0) {
+      int settingsNum = settings.rotateSettings();
+      if (settingsNum == 0) {
           ledControl.kit();
       } else {
-          ledControl.flashMulti(settingNum);
+          ledControl.flashMulti(settingsNum);
       }
       interface.init(&settings);
       tuning.init();
       audioEngine.init(&settings, tuning.createNoteMap(), waveform);
+      EEPROM.write(CONFIG_FILE_ADDR, settingsNum);
     }
 
     if (notesUpdate) {
@@ -175,7 +191,7 @@ void selectWaveform(int waveform) {
     	ledControl.flash();
     }
     ledControl.single(waveform % 4);
-    EEPROM.write(1234, waveform);
+    EEPROM.write(WAVEFORM_ADDR, waveform);
 }
 
 void reBoot(int delayTime){
