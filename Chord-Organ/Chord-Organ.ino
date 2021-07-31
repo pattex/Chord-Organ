@@ -50,16 +50,17 @@ Interface interface;
 Trig trig;
 
 void setup(){
+
 #ifdef DEBUG_STARTUP
-while( !Serial );
-Serial.println("Starting");
+    while( !Serial );
+    Serial.println("Starting");
 #endif // DEBUG_STARTUP
 
     // SD CARD SETTINGS FOR MODULE
     SPI.setMOSI(7);
     SPI.setSCK(14);
 
-	ledControl.init();
+    ledControl.init();
     trig.init();
 
 #ifdef REQUIRE_SD_CARD
@@ -79,6 +80,7 @@ Serial.println("Starting");
     if (settingsFileNum < 0 || settingsFileNum > 9) settingsFileNum = 0;
     // Load and initialize settings
     settings.loadSettingsFile(settingsFileNum);
+    tuning.setTuningFile(settings.tuningFile.c_str());
 
     waveformPages = settings.extraWaves ? 3 : 1;
     if(settings.extraWaves) {
@@ -91,7 +93,7 @@ Serial.println("Starting");
 
     interface.init(&settings);
     tuning.init();
-	audioEngine.init(&settings, tuning.createNoteMap(), waveform);
+    audioEngine.init(&settings, tuning.createNoteMap(), waveform);
 
     ledControl.single(waveform % 4);
 
@@ -127,55 +129,56 @@ void loop(){
 
     trig.update();
 
-	int notesUpdate = state & (ROOT_NOTE_UPDATE | CHORD_INDEX_CHANGED);
-	int buttonShortPress = state & BUTTON_SHORT_PRESS;
+    int notesUpdate = state & (ROOT_NOTE_UPDATE | CHORD_INDEX_CHANGED);
+    int buttonShortPress = state & BUTTON_SHORT_PRESS;
 
     // Reboot module on very long button press
-	if(state & BUTTON_VERY_LONG_PRESS) {
+    if(state & BUTTON_VERY_LONG_PRESS) {
 		// show all LEDs
-		ledControl.multi(0xF);
-		reBoot(50);
-	}
+      ledControl.multi(0xF);
+      reBoot(50);
+  }
 
     // Cycle through settings files on long button press
-    if(state & BUTTON_LONG_PRESS) {
+  if(state & BUTTON_LONG_PRESS) {
       int settingsNum = settings.rotateSettings();
       if (settingsNum == 0) {
           ledControl.kit();
       } else {
           ledControl.flashMulti(settingsNum);
       }
+      tuning.setTuningFile(settings.tuningFile.c_str());
       interface.init(&settings);
       tuning.init();
       audioEngine.init(&settings, tuning.createNoteMap(), waveform);
       EEPROM.write(CONFIG_FILE_ADDR, settingsNum);
-    }
+  }
 
-    if (notesUpdate) {
-    	audioEngine.updateNotes(settings.notes[interface.chordIndex], interface.rootNoteCV);
+  if (notesUpdate) {
+   audioEngine.updateNotes(settings.notes[interface.chordIndex], interface.rootNoteCV);
 
 		// Only glide if CV is quantised
-        if(settings.glide && interface.quantiseRootCV) {
-			audioEngine.startGlide();
-        }
-    }
+   if(settings.glide && interface.quantiseRootCV) {
+     audioEngine.startGlide();
+ }
+}
 
-    if (buttonShortPress){
-    	nextWaveform();
-    }
+if (buttonShortPress){
+   nextWaveform();
+}
 
-    if (buttonShortPress || notesUpdate)  {
-        trig.out(true);
-    }
+if (buttonShortPress || notesUpdate)  {
+    trig.out(true);
+}
 
-    if(state || audioEngine.gliding) {
-        audioEngine.update(waveform, interface.rootNotePot);
-    }
+if(state || audioEngine.gliding) {
+    audioEngine.update(waveform, interface.rootNotePot);
+}
 
-    ledControl.bankAndSingle(waveformPage, waveform);
+ledControl.bankAndSingle(waveformPage, waveform);
 
 	#ifdef CHECK_CPU
-    checkCPU();
+checkCPU();
 	#endif // CHECK_CPU
 }
 

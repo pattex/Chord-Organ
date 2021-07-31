@@ -3,24 +3,32 @@
 
 //#define DEBUG_TUNING
 
-Tuning::Tuning(const char* filename) {
+Tuning::Tuning(char* filename) {
 	_filename = filename;
 	numRatios = 0;
 }
 
 boolean Tuning::init() {
 	boolean exists = SD.exists(_filename);
+	ratios[128] = {0.0};
+	numRatios = 0;
+
 #ifdef DEBUG_TUNING
 	Serial.print("Checking for tuning file ");
 	Serial.println(_filename);
 	Serial.print("Exists ");
 	Serial.println(exists);
 #endif
+
 	if(exists) {
 		return read();
 	} else {
 		return false;
 	}
+}
+
+void Tuning::setTuningFile(char* tuningFile) {
+	_filename = tuningFile;
 }
 
 // Return true if we successfully read a tuning file, false otherwise
@@ -46,97 +54,97 @@ boolean Tuning::read() {
 
 	String description;
 
-    while (scalaFile.available()) {
-        character = scalaFile.read();
+	while (scalaFile.available()) {
+		character = scalaFile.read();
 
         // If we're in a comment just keep reading until we hit the next line
-        if(inComment) {
-        	if(character == '\n') {
-        		inComment = false;
-        	}
-        	continue;
-        }
-        if(character == '!') {
+		if(inComment) {
+			if(character == '\n') {
+				inComment = false;
+			}
+			continue;
+		}
+		if(character == '!') {
         	// Line is a comment, ignore until end
-        	inComment = true;
-        	if(state == RATIO_STATE && currentLine.length() > 1) {
+			inComment = true;
+			if(state == RATIO_STATE && currentLine.length() > 1) {
         		// If a comment has started on a ratio line, we can process the ratio
-        		if(addRatio(&currentLine)) {
-        			break;
-        		}
-        		currentLine = "";
-        	}
-        	continue;
-        } else {
-        	inComment = false;
-        }
+				if(addRatio(&currentLine)) {
+					break;
+				}
+				currentLine = "";
+			}
+			continue;
+		} else {
+			inComment = false;
+		}
 
-        if(state == DESCRIPTION_STATE) {
-        	if(character == '\n') {
-        		state = ENTRIES_STATE;
-        		if(currentLine.length() == 0) {
-        			description = "No Info";
-        		} else {
-        			description = currentLine;
-        		}
+		if(state == DESCRIPTION_STATE) {
+			if(character == '\n') {
+				state = ENTRIES_STATE;
+				if(currentLine.length() == 0) {
+					description = "No Info";
+				} else {
+					description = currentLine;
+				}
 				#ifdef DEBUG_TUNING
-        		Serial.println("End description");
-        		Serial.println(description);
+				Serial.println("End description");
+				Serial.println(description);
 				#endif
 
-        		currentLine = "";
-        	} else {
-        		currentLine += character;
-        	}
-        } else if(state == ENTRIES_STATE) {
-        	if(character == '\n') {
-        		state = RATIO_STATE;
-        		numEntries = currentLine.toInt();
-        		if(numEntries == 0) {
-        			return false;
-        		}
+				currentLine = "";
+			} else {
+				currentLine += character;
+			}
+		} else if(state == ENTRIES_STATE) {
+			if(character == '\n') {
+				state = RATIO_STATE;
+				numEntries = currentLine.toInt();
+				if(numEntries == 0) {
+					return false;
+				}
 				#ifdef DEBUG_TUNING
-        		Serial.print("End num entries: ");
-        		Serial.println(numEntries);
+				Serial.print("End num entries: ");
+				Serial.println(numEntries);
 				#endif
 
-        		currentLine = "";
-        	} else {
-        		currentLine += character;
-        	}
-        } else if(state == RATIO_STATE) {
-        	if(character == '\n') {
+				currentLine = "";
+			} else {
+				currentLine += character;
+			}
+		} else if(state == RATIO_STATE) {
+			if(character == '\n') {
 				#ifdef DEBUG_TUNING
-        		Serial.print("Got ratio");
-        		Serial.println(currentLine);
+				Serial.print("Got ratio");
+				Serial.println(currentLine);
 				#endif
 
-        		if(addRatio(&currentLine)) {
-        			break;
-        		}
-        		currentLine = "";
-        	} else {
-        		currentLine += character;
-        	}
-        }
-    }
+				if(addRatio(&currentLine)) {
+					break;
+				}
+				currentLine = "";
+			} else {
+				currentLine += character;
+			}
+		}
+	}
 
-    scalaFile.close();
+	scalaFile.close();
 
 	#ifdef DEBUG_TUNING
-    if(numEntries != numRatios) {
-    	Serial.print("Entries and Ratio Count not equal. ");
-    	Serial.print(numEntries);
-    	Serial.print(" vs ");
-    	Serial.println(numRatios);
-    }
+	if(numEntries != numRatios) {
+		Serial.print("Entries and Ratio Count not equal. ");
+		Serial.print(numEntries);
+		Serial.print(" vs ");
+		Serial.println(numRatios);
+	}
 	#endif
 
-    if(numRatios > 1) {
-    	return true;
-    }
+	if(numRatios > 1) {
+		return true;
+	}
 
-    return false;
+	return false;
 }
 
 // Returns boolean to indicate stopping condition has been met.
@@ -260,22 +268,22 @@ float* Tuning::createNoteMap() {
 		int octavesAway = 0;
 		float octaveFactor;
 		int relativeNoteIndex = 0;
-	    for(int i=0;i<128;i++) {
-	    	relativeNoteIndex = i - centerNote;
+		for(int i=0;i<128;i++) {
+			relativeNoteIndex = i - centerNote;
 
-	    	octavesAway = abs(floor((float)relativeNoteIndex / (float)notesPerOctave));
-	    	indexInOctave = relativeNoteIndex % notesPerOctave;
-	    	octaveFactor = pow(octaveSize, octavesAway);
+			octavesAway = abs(floor((float)relativeNoteIndex / (float)notesPerOctave));
+			indexInOctave = relativeNoteIndex % notesPerOctave;
+			octaveFactor = pow(octaveSize, octavesAway);
 
-	    	if(relativeNoteIndex < 0) {
-	    		octaveBaseFreq = centerFrequency / octaveFactor;
-	    		indexInOctave = (indexInOctave + notesPerOctave) % notesPerOctave;
-	    	} else {
-	    		octaveBaseFreq = centerFrequency * octaveFactor;
-	    	}
+			if(relativeNoteIndex < 0) {
+				octaveBaseFreq = centerFrequency / octaveFactor;
+				indexInOctave = (indexInOctave + notesPerOctave) % notesPerOctave;
+			} else {
+				octaveBaseFreq = centerFrequency * octaveFactor;
+			}
 
-	    	noteRatio = ratios[indexInOctave];
-	        pitchValues[i] = octaveBaseFreq * noteRatio;
+			noteRatio = ratios[indexInOctave];
+			pitchValues[i] = octaveBaseFreq * noteRatio;
 
 			#ifdef DEBUG_TUNING
 			Serial.print(i);
@@ -292,16 +300,16 @@ float* Tuning::createNoteMap() {
 			Serial.print("\t\t");
 			Serial.println(pitchValues[i]);
 			#endif
-	    }
+		}
 
 	} else {
 		// Create standard 12-tet note map
-        for(int i=0;i<128;i++) {
-            pitchValues[i] = getStandardFreq(i);
-        }
+		for(int i=0;i<128;i++) {
+			pitchValues[i] = getStandardFreq(i);
+		}
 	}
 
-    return pitchValues;
+	return pitchValues;
 }
 
 float Tuning::getStandardFreq(float note) {

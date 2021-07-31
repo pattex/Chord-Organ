@@ -6,7 +6,7 @@
 Settings::Settings(const char* filename) {
   defaultFilename = filename;
   splitFilename();
-	strcpy(_filename, filename);
+  strcpy(_filename, filename);
 }
 
 void Settings::init(boolean hasSD) {
@@ -69,10 +69,10 @@ void Settings::splitFilename() {
 }
 
 void Settings::initialization(boolean hasSD) {
-if(!hasSD) {
+    if(!hasSD) {
     // Configure defaults
-    copyDefaults();
-  } else {
+        copyDefaults();
+    } else {
       if (SD.exists(_filename)) {
           read();
       }
@@ -97,11 +97,12 @@ void Settings::read() {
     int CHORD = 1;
     int SETTING = 2;
     int state = NONE;
+    tuningFile = "";
 
     settingsFile = SD.open(_filename);
 
     while (settingsFile.available()) {
-        
+
         character = settingsFile.read();
 
         if (character == '[') {
@@ -171,6 +172,14 @@ void Settings::read() {
                     }
                 } else if(settingValue.startsWith("!STACK")) {
                 	stacked = true;
+                } else if(settingValue.startsWith("!TUNING")) {
+                    if(spacePos > 0) {
+                        tuningFile = settingValue.substring(spacePos).trim();
+                    }
+#ifdef DEBUG_CONFIG
+                    Serial.print("tuningFile ");
+                    Serial.println(tuningFile);
+#endif
                 } else if(settingValue.startsWith("!FREEROOT")) {
                 	if(spacePos > 0) {
                 		String freetype = settingValue.substring(spacePos);
@@ -288,5 +297,7 @@ void Settings::printDebug() {
 	Serial.println(quantiseRootPot);
 	Serial.print("Stacked ");
 	Serial.println(stacked);
+    Serial.print("Scale file for tuning ");
+    Serial.println(tuningFile);
 	Serial.println("-- End Settings --");
 }
