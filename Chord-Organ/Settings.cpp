@@ -6,7 +6,7 @@
 Settings::Settings(const char* filename) {
   defaultFilename = filename;
   splitFilename();
-	strcpy(_filename, filename);
+  strcpy(_filename, filename);
 }
 
 void Settings::init(boolean hasSD) {
@@ -69,10 +69,10 @@ void Settings::splitFilename() {
 }
 
 void Settings::initialization(boolean hasSD) {
-if(!hasSD) {
+    if(!hasSD) {
     // Configure defaults
-    copyDefaults();
-  } else {
+        copyDefaults();
+    } else {
       if (SD.exists(_filename)) {
           read();
       }
@@ -101,7 +101,7 @@ void Settings::read() {
     settingsFile = SD.open(_filename);
 
     while (settingsFile.available()) {
-        
+
         character = settingsFile.read();
 
         if (character == '[') {
