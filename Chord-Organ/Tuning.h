@@ -6,14 +6,15 @@
 class Tuning {
 
 public:
-	Tuning(const char* filename);
+	Tuning(char* filename);
 	boolean init();
 	boolean read();
 	float pitchValues[128];
 	float* createNoteMap();
 	float getStandardFreq(float note);
+	void setTuningFile(char* tuningFile);
 private:
-	const char* _filename;
+	char* _filename;
 	float ratios[128];
 	int numRatios;
 	File scalaFile;

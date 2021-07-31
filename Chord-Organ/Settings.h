@@ -19,6 +19,7 @@ public:
 	boolean glide = false;
 	boolean quantiseRootCV = true;
 	boolean quantiseRootPot = true;
+	String tuningFile;
 
 	uint8_t lowNote = 36;
 	uint16_t glideTime = 50;

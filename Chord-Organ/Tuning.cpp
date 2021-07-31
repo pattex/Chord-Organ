@@ -3,24 +3,32 @@
 
 //#define DEBUG_TUNING
 
-Tuning::Tuning(const char* filename) {
+Tuning::Tuning(char* filename) {
 	_filename = filename;
 	numRatios = 0;
 }
 
 boolean Tuning::init() {
 	boolean exists = SD.exists(_filename);
+	ratios[128] = {0.0};
+	numRatios = 0;
+
 #ifdef DEBUG_TUNING
 	Serial.print("Checking for tuning file ");
 	Serial.println(_filename);
 	Serial.print("Exists ");
 	Serial.println(exists);
 #endif
+
 	if(exists) {
 		return read();
 	} else {
 		return false;
 	}
+}
+
+void Tuning::setTuningFile(char* tuningFile) {
+	_filename = tuningFile;
 }
 
 // Return true if we successfully read a tuning file, false otherwise

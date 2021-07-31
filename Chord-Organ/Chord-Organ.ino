@@ -50,6 +50,7 @@ Interface interface;
 Trig trig;
 
 void setup(){
+
 #ifdef DEBUG_STARTUP
     while( !Serial );
     Serial.println("Starting");
@@ -79,6 +80,7 @@ void setup(){
     if (settingsFileNum < 0 || settingsFileNum > 9) settingsFileNum = 0;
     // Load and initialize settings
     settings.loadSettingsFile(settingsFileNum);
+    tuning.setTuningFile(settings.tuningFile.c_str());
 
     waveformPages = settings.extraWaves ? 3 : 1;
     if(settings.extraWaves) {
@@ -145,6 +147,7 @@ void loop(){
       } else {
           ledControl.flashMulti(settingsNum);
       }
+      tuning.setTuningFile(settings.tuningFile.c_str());
       interface.init(&settings);
       tuning.init();
       audioEngine.init(&settings, tuning.createNoteMap(), waveform);

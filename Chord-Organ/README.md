@@ -56,7 +56,11 @@ For both
 
 ##### Scala Tuning File
 
-If a TUNING.SCL file exists on the SD card it will be used to define the CV / Knob note to frequency mapping.
+If a tunig file (Scala - .SCL) exists on the SD card and is set in the used configuration file it will be used to define the CV / Knob note to frequency mapping.
+
+Set the Scala tuning file via the !TUNING setting, e.g.
+
+`!TUNING myTuning.scl`
 
 NOTE : This will only work for inputs which are quantised, anything that uses FREEROOT will not be affected by the tuning file.
 
