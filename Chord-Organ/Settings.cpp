@@ -98,6 +98,11 @@ void Settings::read() {
     int SETTING = 2;
     int state = NONE;
     tuningFile = "";
+    glideTime = 5;
+    stacked = false;
+    extraWaves = false;
+    quantiseRootCV = true;
+    quantiseRootPot = true;
 
     settingsFile = SD.open(_filename);
 
