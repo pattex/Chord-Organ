@@ -71,8 +71,15 @@ Scala is available from the [Scala Website](http://www.huygens-fokker.org/scala/
 There can be up to ten different configuration files to store chords and behaviours. The default config file is "CHORDORG.TXT". It is automatically created if there is none existing on the microSD card. Additionally there can be "CHORDORG1.TXT" to "CHORDORG9.TXT" with completely different configurations.
 
 Cycling through the config files is possible by pressing the waveform button for at least one second. The waveform LEDs blink to indicate which file is being used.
+ / Firmware Binary
 
-### Config Generator / Firmware Binary
+##### Known issues
+
+* At the moment, every loaded config has a minimum glide of 5ms. My only unit for testing has sound issues if I set it to 0, but my unit is a bit wonky anyway. Maybe I should get a second one…
+
+### Config Generator
 To generate a settings file and download the latest original(!)
 firmware binary please visit the [Config Generator Page](http://polyfather.com/chord_organ)
+
+**The latest binary of Chord Organ Chamäleon [can be found here](https://github.com/pattex/Chord-Organ/tree/master/Collateral/Hex%20File).**
 
